@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' https:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;">
+  <title>Emotion Music Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-black min-h-screen flex flex-col items-center justify-start pt-8">
+ 
+  <div id="setupDialog" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full mx-4 shadow-2xl relative">
+   
+      <button id="closeDialogBtn" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-full transition-all z-10">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      
+    
+      <div id="step1" class="p-8">
+        <div class="text-center mb-8">
+          <img src="https://i.postimg.cc/j5Tdt9n0/New-Project-11.png" alt="Logo" class="w-32 mx-auto mb-4" />
+          <h2 class="text-2xl font-bold text-white mb-2">Welcome!</h2>
+          <p class="text-gray-400">Let's get started by learning your name</p>
+        </div>
+        <div class="space-y-4">
+          <input 
+            type="text" 
+            id="nameInput" 
+            placeholder="Enter your name" 
+            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button 
+            id="step1NextBtn" 
+            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-6 py-3 rounded-lg font-medium text-white transition-all active:scale-95"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Language Selection -->
+      <div id="step2" class="p-8 hidden">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold text-white mb-2">Choose Your Language</h2>
+          <p class="text-gray-400">This will be your default language for recommendations</p>
+        </div>
+        <div class="space-y-4">
+          <div id="languageOptions" class="space-y-3">
+            <label class="flex items-center p-4 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-750 transition-all">
+              <input type="radio" name="language" value="hindi" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600" checked />
+              <span class="ml-3 text-white font-medium">Hindi</span>
+            </label>
+            <label class="flex items-center p-4 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-750 transition-all">
+              <input type="radio" name="language" value="english" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600" />
+              <span class="ml-3 text-white font-medium">English</span>
+            </label>
+            <label class="flex items-center p-4 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-750 transition-all">
+              <input type="radio" name="language" value="tamil" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600" />
+              <span class="ml-3 text-white font-medium">Tamil</span>
+            </label>
+            <label class="flex items-center p-4 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-750 transition-all">
+              <input type="radio" name="language" value="telugu" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600" />
+              <span class="ml-3 text-white font-medium">Telugu</span>
+            </label>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button 
+              id="step2BackBtn" 
+              class="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 px-6 py-3 rounded-lg font-medium text-white transition-all"
+            >
+              Back
+            </button>
+            <button 
+              id="step2NextBtn" 
+              class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-6 py-3 rounded-lg font-medium text-white transition-all active:scale-95"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Welcome Message -->
+      <div id="step3" class="p-8 hidden">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 id="welcomeTitle" class="text-2xl font-bold text-white mb-2">Welcome Riyaz!</h2>
+          <p class="text-gray-400 mb-4">You will be recommended music in your default language. You can choose other languages anytime.</p>
+          <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-400">Default Language:</p>
+            <p id="selectedLanguageDisplay" class="text-lg font-semibold text-blue-400">Hindi</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            id="step3BackBtn" 
+            class="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 px-6 py-3 rounded-lg font-medium text-white transition-all"
+          >
+            Back
+          </button>
+          <button 
+            id="step3StartBtn" 
+            class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-6 py-3 rounded-lg font-medium text-white transition-all active:scale-95"
+          >
+            Get Started
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-md w-full px-4 py-4 sm:max-w-lg">
+    <header class="text-center mb-6">
+      <img src="https://i.postimg.cc/j5Tdt9n0/New-Project-11.png" alt="Logo" class="w-40 mx-auto mb-3" />
+      <p class="text-sm text-gray-400">Your music companion</p>
+    </header>
+
+    <div id="webcamContainer" class="relative group mb-6">
+      <div class="h-64 rounded-xl overflow-hidden border-2 border-gray-800 bg-gray-950 flex items-center justify-center">
+        <video id="webcam" class="w-full h-auto object-cover" autoplay playsinline muted></video>
+        <div id="webcamPlaceholder" class="absolute inset-0 bg-gray-950 flex items-center justify-center">
+          <svg class="w-10 h-10 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m8 3a5 5 0 0 0-5 5a5 5 0 0 0 5 5a5 5 0 0 0 5-5a5 5 0 0 0-5-5m0 2a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-3 text-center">
+        <p class="text-xs text-gray-500">💡 Tip: Make sure your face is clearly visible and well-lit</p>
+      </div>
+      <button id="cameraToggleButton" class="absolute bottom-3 right-3 w-10 h-10 flex items-center justify-center bg-gray-900/50 backdrop-blur-lg border border-gray-800 rounded-full hover:bg-gray-800/60 transition-all shadow-lg">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m8 3a5 5 0 0 0-5 5a5 5 0 0 0 5 5a5 5 0 0 0 5-5a5 5 0 0 0-5-5m0 2a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="text-center mb-6">
+      <button id="submitBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 px-8 py-3 rounded-lg font-medium text-base transition-all active:scale-95 shadow-md w-full flex items-center justify-center gap-3 text-lg">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      Recommend Music
+      </button>
+      <div id="spinner" class="hidden mt-6">
+        <div class="inline-block w-8 h-8 border-[3px] border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    </div>
+
+    <div class="mb-6 w-full max-w-xs mx-auto">
+      <label for="languageSelector" class="block text-sm font-medium text-gray-400 mb-2 text-center">Select Language</label>
+      <select id="languageSelector" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        <option value="hindi" selected>Hindi</option>
+        <option value="english">English</option>
+        <option value="tamil">Tamil</option>
+        <option value="telugu">Telugu</option>
+      </select>
+    </div>
+    
+    <div id="musicRecommendationsContainer" class="space-y-6 music-recommendations"></div>
+  </div>
+
+  <script>
+    // Setup Dialog Flow
+    const setupDialog = document.getElementById('setupDialog');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    
+    const nameInput = document.getElementById('nameInput');
+    const step1NextBtn = document.getElementById('step1NextBtn');
+    const step2BackBtn = document.getElementById('step2BackBtn');
+    const step2NextBtn = document.getElementById('step2NextBtn');
+    const step3BackBtn = document.getElementById('step3BackBtn');
+    const step3StartBtn = document.getElementById('step3StartBtn');
+    
+    const welcomeTitle = document.getElementById('welcomeTitle');
+    const selectedLanguageDisplay = document.getElementById('selectedLanguageDisplay');
+    
+    let userName = '';
+    let selectedLanguage = 'hindi';
+
+    // TEMPORARILY DISABLED - Always show dialog for testing
+    // Comment out these lines to force the dialog to appear every time:
+    /*
+    const hasCompletedSetup = localStorage.getItem('setupCompleted');
+    if (hasCompletedSetup) {
+      setupDialog.classList.add('hidden');
+      userName = localStorage.getItem('userName') || 'Guest';
+      selectedLanguage = localStorage.getItem('userLanguage') || 'hindi';
+    }
+    */
+   
+    // Clear setup on page load (REMOVE THIS LATER if you want to remember setup)
+    localStorage.removeItem('setupCompleted');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userLanguage');
+
+    const languageNames = {
+      'hindi': 'Hindi',
+      'english': 'English',
+      'tamil': 'Tamil',
+      'telugu': 'Telugu'
+    };
+
+    const showStep = (stepNum) => {
+      step1.classList.add('hidden');
+      step2.classList.add('hidden');
+      step3.classList.add('hidden');
+      
+      if (stepNum === 1) step1.classList.remove('hidden');
+      if (stepNum === 2) step2.classList.remove('hidden');
+      if (stepNum === 3) step3.classList.remove('hidden');
+    };
+
+    step1NextBtn.addEventListener('click', () => {
+      userName = nameInput.value.trim();
+      if (!userName) {
+        alert('Please enter your name');
+        return;
+      }
+      showStep(2);
+    });
+
+    step2BackBtn.addEventListener('click', () => {
+      showStep(1);
+    });
+
+    step2NextBtn.addEventListener('click', () => {
+      selectedLanguage = document.querySelector('input[name="language"]:checked').value;
+      welcomeTitle.textContent = `Welcome ${userName}!`;
+      selectedLanguageDisplay.textContent = languageNames[selectedLanguage];
+      showStep(3);
+    });
+
+    step3BackBtn.addEventListener('click', () => {
+      showStep(2);
+    });
+
+    step3StartBtn.addEventListener('click', () => {
+      setupDialog.classList.add('hidden');
+      languageSelector.value = selectedLanguage;
+      language = selectedLanguage;
+      // Save to localStorage
+      localStorage.setItem('setupCompleted', 'true');
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('userLanguage', selectedLanguage);
+    });
+
+    // Close dialog button
+    const closeDialogBtn = document.getElementById('closeDialogBtn');
+    closeDialogBtn.addEventListener('click', () => {
+      setupDialog.classList.add('hidden');
+      // Set default values if user closes without completing
+      if (!userName) userName = 'Guest';
+      languageSelector.value = selectedLanguage;
+      language = selectedLanguage;
+      // Save to localStorage
+      localStorage.setItem('setupCompleted', 'true');
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('userLanguage', selectedLanguage);
+    });
+
+    nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') step1NextBtn.click();
+    });
+
+    // Main Page Logic
+    const videoElement = document.getElementById('webcam');
+    const cameraToggleButton = document.getElementById('cameraToggleButton');
+    const submitButton = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const recommendationResults = document.getElementById('musicRecommendationsContainer');
+    const webcamPlaceholder = document.getElementById('webcamPlaceholder');
+    const languageSelector = document.getElementById('languageSelector');
+
+    let currentStream;
+    let usingFrontCamera = false;
+    let language = "hindi"; 
+    let lastDetectedEmotion = null;
+
+    languageSelector.addEventListener('change', (e) => {
+      language = e.target.value; 
+      if (lastDetectedEmotion) {
+        updateLanguageRecommendations(lastDetectedEmotion, language);
+      }
+    });
+
+    const initCamera = (useFront) => {
+      const constraints = {
+        video: { facingMode: useFront ? 'user' : 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+          }
+          currentStream = stream;
+          videoElement.srcObject = stream;
+          videoElement.classList.remove('hidden');
+          webcamPlaceholder.classList.add('hidden');
+        })
+        .catch(error => {
+          console.error('Camera error:', error);
+          alert('Camera access required. Please enable permissions.');
+          videoElement.classList.add('hidden');
+          webcamPlaceholder.classList.remove('hidden');
+        });
+    };
+
+    initCamera(usingFrontCamera);
+
+    cameraToggleButton.addEventListener('click', () => {
+      usingFrontCamera = !usingFrontCamera;
+      initCamera(usingFrontCamera);
+    });
+
+    function captureImage() {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+      
+      if (canvas.width === 0 || canvas.height === 0) {
+        console.error('Video not ready yet. Width:', canvas.width, 'Height:', canvas.height);
+        alert('Please wait for the video to load properly');
+        return Promise.reject('Video not ready');
+      }
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Draw video frame
+      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      
+      // Convert to blob with high quality
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            console.error('Failed to create blob from canvas');
+            reject('Failed to capture image');
+          } else {
+            console.log('Image captured successfully. Size:', blob.size, 'bytes');
+            resolve(blob);
+          }
+        }, 'image/jpeg', 0.95); // Increased quality to 0.95
+      });
+    }
+
+    async function updateLanguageRecommendations(emotion, lang) {
+      try {
+        spinner.classList.remove('hidden');
+        const response = await fetch('/change_language', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emotion: emotion, language: lang })
+        });
+        const data = await response.json();
+        spinner.classList.add('hidden');
+        if (data.links && data.links.length) {
+          let html = `
+            <div class="bg-gray-900/50 p-6 rounded-xl mb-6">
+              <p class="text-lg text-gray-400 mb-2">✅ Your emotion:</p>
+              <h3 class="text-2xl font-semibold text-green-400">${emotion}</h3>
+            </div>`;
+          data.links.forEach(item => {
+            if (item.link.includes('spotify.com/track/')) {
+              let parts = item.link.split('/track/');
+              if (parts.length > 1) {
+                const trackId = parts[1].split('?')[0];
+                if (trackId && trackId.toLowerCase() !== "nan") {
+                  html += `
+                    <div class="bg-gray-900/50 p-4 rounded-xl mb-6">
+                      <p class="text-md text-gray-300 mb-2">🎵 ${item.song} - ${item.artist}</p>
+                      <div class="aspect-video rounded-lg overflow-hidden">
+                        <iframe src="https://open.spotify.com/embed/track/${trackId}" class="w-full h-full" frameborder="0" allow="encrypted-media" loading="lazy"></iframe>
+                      </div>
+                    </div>`;
+                }
+              }
+            }
+          });
+          recommendationResults.innerHTML = html;
+        }
+      } catch (error) {
+        spinner.classList.add('hidden');
+        console.error('Error updating recommendations:', error);
+      }
+    }
+
+    submitButton.addEventListener('click', async () => {
+      try {
+        spinner.classList.remove('hidden');
+        recommendationResults.innerHTML = '<p class="text-gray-400 text-center">📸 Capturing image...</p>';
+        
+        let imageBlob;
+        try {
+          imageBlob = await captureImage();
+        } catch (err) {
+          spinner.classList.add('hidden');
+          recommendationResults.innerHTML = `<p class="text-red-400 text-center">❌ Failed to capture image: ${err}</p>`;
+          return;
+        }
+        
+        recommendationResults.innerHTML = '<p class="text-gray-400 text-center">🎵 Analyzing your emotion...</p>';
+        
+        const response = await fetch('/save_image', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'image/jpeg',
+            'X-Language': language
+          },
+          body: imageBlob
+        });
+        
+        const data = await response.json();
+        spinner.classList.add('hidden');
+
+        if (data.emotion_found) {
+          lastDetectedEmotion = data.emotion_found;
+          let html = `
+            <div class="bg-gray-900/50 p-6 rounded-xl mb-6">
+              <p class="text-lg text-gray-400 mb-2">✅ Detected emotion:</p>
+              <h3 class="text-2xl font-semibold text-green-400">${data.emotion_found}</h3>
+            </div>`;
+          
+          if (data.links && data.links.length) {
+            html += `<p class="text-gray-400 mb-4">🎵 Recommended songs for your mood:</p>`;
+            data.links.forEach(item => {
+              if (item.link.includes('spotify.com/track/')) {
+                let parts = item.link.split('/track/');
+                if (parts.length > 1) {
+                  const trackId = parts[1].split('?')[0];
+                  if (trackId && trackId.toLowerCase() !== "nan") {
+                    html += `
+                      <div class="bg-gray-900/50 p-4 rounded-xl mb-6">
+                        <p class="text-md text-gray-300 mb-2">${item.song} - ${item.artist}</p>
+                        <div class="aspect-video rounded-lg overflow-hidden">
+                          <iframe src="https://open.spotify.com/embed/track/${trackId}" class="w-full h-full" frameborder="0" allow="encrypted-media" loading="lazy"></iframe>
+                        </div>
+                      </div>`;
+                  }
+                }
+              }
+            });
+          } else {
+            html += `<p class="text-gray-400 text-center">No songs found for this emotion in your language.</p>`;
+          }
+          recommendationResults.innerHTML = html;
+        } else {
+          recommendationResults.innerHTML = `
+            <div class="bg-red-900/30 border border-red-700 p-4 rounded-lg text-center">
+              <p class="text-red-400 text-lg">❌ No emotion detected</p>
+              <p class="text-gray-400 text-sm mt-2">Make sure your face is clearly visible and well-lit. Try again!</p>
+            </div>`;
+        }
+        recommendationResults.scrollIntoView({ behavior: 'smooth' });
+      } catch (error) {
+        spinner.classList.add('hidden');
+        recommendationResults.innerHTML = `<div class="bg-red-900/30 border border-red-700 p-4 rounded-lg text-center"><p class="text-red-400">⚠️ Error: ${error.message}</p></div>`;
+        console.error('Submission error:', error);
+      }
+    });
+
+    let viewport = document.querySelector("meta[name=viewport]");
+    viewport.setAttribute("content", viewport.content + ", height=" + window.innerHeight);
+  </script>
+</body>
+</html>
