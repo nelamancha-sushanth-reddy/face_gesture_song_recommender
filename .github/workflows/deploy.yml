@@ -1,0 +1,21 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-d7hpm758nd3s73capp40?key=VsQ2kroUi8
+
+      - name: Show Live URL
+        run: |
+          echo "Deployment triggered successfully!"
+          echo "Live URL:"
+          echo "https://face-gesture-song-recommender.onrender.com"
